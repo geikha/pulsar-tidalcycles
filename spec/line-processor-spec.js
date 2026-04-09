@@ -110,4 +110,27 @@ describe('Line Processor', () => {
     		expect(testString.match(LineProcessor.exceptedFunctionPatterns())).toBeNull()
     	})
     })
+
+    describe('isExceptedByKeywords', () => {
+        it('should return false when keywords list is empty', () => {
+            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', [])).toBe(false);
+        })
+
+        it('should return false when keywords is null or undefined', () => {
+            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', null)).toBe(false);
+            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', undefined)).toBe(false);
+        })
+
+        it('should return true when the line contains a configured keyword', () => {
+            expect(LineProcessor.isExceptedByKeywords('myCustomFn $ s "bd"', ['myCustomFn'])).toBe(true);
+        })
+
+        it('should return false when no keyword matches the line', () => {
+            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', ['myCustomFn', 'otherFn'])).toBe(false);
+        })
+
+        it('should return true when any one of multiple keywords matches', () => {
+            expect(LineProcessor.isExceptedByKeywords('d1 $ slow 2 $ s "bd"', ['fast', 'slow'])).toBe(true);
+        })
+    })
 })
