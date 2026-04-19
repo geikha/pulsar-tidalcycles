@@ -91,46 +91,49 @@ describe('Line Processor', () => {
     	})
     })
 
-    describe('exceptedFunctionPatterns', () => {
+    describe('excludedFunctionPatterns', () => {
         it ('should match numerals function occurance in a line', () => {
     		const testString = `numerals = "0 1 2 3"`;
     		const expected = 'numerals = "0 1 2 3"';
-    		expect(testString.match(LineProcessor.exceptedFunctionPatterns())[0]).toEqual(expected);
+    		expect(testString.match(LineProcessor.excludedFunctionPatterns())[0]).toEqual(expected);
     	})
 
         it ('should match p function occurance in a line', () => {
     		const testString = `p "hello" $ s "808"`;
     		const expected = 'p "hello" $ s "808"';
     
-    		expect(testString.match(LineProcessor.exceptedFunctionPatterns())[0]).toEqual(expected);
+    		expect(testString.match(LineProcessor.excludedFunctionPatterns())[0]).toEqual(expected);
     	})
 
         it ('should not match an allowed control pattern in a line', () => {
     		const testString = `d1 $ s "superpiano"`;
-    		expect(testString.match(LineProcessor.exceptedFunctionPatterns())).toBeNull()
+    		expect(testString.match(LineProcessor.excludedFunctionPatterns())).toBeNull()
     	})
-    })
 
-    describe('isExceptedByKeywords', () => {
-        it('should return false when keywords list is empty', () => {
-            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', [])).toBe(false);
+        it ('should match a line starting with : (interpreter command)', () => {
+    		const testString = `:set prompt ""`;
+    		expect(LineProcessor.excludedFunctionPatterns().test(testString)).toBe(true);
+    	})
+
+        it('should not exclude when keywords list is empty', () => {
+            expect(LineProcessor.excludedFunctionPatterns([]).test('d1 $ s "bd"')).toBe(false);
         })
 
-        it('should return false when keywords is null or undefined', () => {
-            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', null)).toBe(false);
-            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', undefined)).toBe(false);
+        it('should not exclude when keywords is null or undefined', () => {
+            expect(LineProcessor.excludedFunctionPatterns(null).test('d1 $ s "bd"')).toBe(false);
+            expect(LineProcessor.excludedFunctionPatterns(undefined).test('d1 $ s "bd"')).toBe(false);
         })
 
-        it('should return true when the line contains a configured keyword', () => {
-            expect(LineProcessor.isExceptedByKeywords('myCustomFn $ s "bd"', ['myCustomFn'])).toBe(true);
+        it('should exclude when the line contains a configured keyword', () => {
+            expect(LineProcessor.excludedFunctionPatterns(['myCustomFn']).test('myCustomFn $ s "bd"')).toBe(true);
         })
 
-        it('should return false when no keyword matches the line', () => {
-            expect(LineProcessor.isExceptedByKeywords('d1 $ s "bd"', ['myCustomFn', 'otherFn'])).toBe(false);
+        it('should not exclude when no keyword matches the line', () => {
+            expect(LineProcessor.excludedFunctionPatterns(['myCustomFn', 'otherFn']).test('d1 $ s "bd"')).toBe(false);
         })
 
-        it('should return true when any one of multiple keywords matches', () => {
-            expect(LineProcessor.isExceptedByKeywords('d1 $ slow 2 $ s "bd"', ['fast', 'slow'])).toBe(true);
+        it('should exclude when any one of multiple keywords matches', () => {
+            expect(LineProcessor.excludedFunctionPatterns(['fast', 'slow']).test('d1 $ slow 2 $ s "bd"')).toBe(true);
         })
     })
 })
